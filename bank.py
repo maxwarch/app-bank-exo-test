@@ -18,10 +18,14 @@ class Bank:
 
 
 class Account(Bank):
-    def get(self, account_id: int) -> AccountsModel:
+    def __init__(self) -> None:
+        super().__init__()
+        self.account = AccountsModel()
+
+    def refresh(self, account_id: int) -> AccountsModel:
         return (
             self.db.session.query(AccountsModel)
-            .filter(AccountsModel.account_id == bindparam("account_id", account_id))
+            .filter(AccountsModel.account_id == bindparam("account_id", self.account_id))
             .one()
         )
 
