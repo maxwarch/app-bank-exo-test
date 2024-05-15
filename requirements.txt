@@ -1,0 +1,6 @@
+pytest
+pytest-cov
+requests
+sqlalchemy
+alembic
+mock-alchemy
