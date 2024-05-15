@@ -1,39 +1,36 @@
 import pytest
-from sqlalchemy import text
-from sqlalchemy.exc import NoResultFound
 
 from bank import Account
 from database import Database
 from models import AccountsModel
 
+INIT_BALANCE = 5899
+
 
 def test_create(db: Database):
     acc = Account()
-    acc.create(12)
+    acc.create(5899)
 
-    id_created = db.engine.connect().execute(text("SELECT last_insert_rowid()"))
+    assert acc.account.account_id == 1
+    assert acc.account.balance == INIT_BALANCE
 
-    acc_in_db = (
-        db.session.query(AccountsModel).filter(AccountsModel.balance == 12).one()
-    )
 
-    assert id_created.fetchone()[0] == acc_in_db.account_id
+def test_get(db):
+    assert Account(1).account.account_id == 1
 
 
 def test_update(db: Database):
-    acc = Account()
-    acc.update(1, balance=5)
+    acc = Account(1)
+    acc.update(balance=5)
 
-    acc_in_db = (
-        db.session.query(AccountsModel).filter(AccountsModel.account_id == 1).one()
-    )
-
-    assert acc_in_db.balance == 17
+    assert acc.account.balance == INIT_BALANCE + 5
 
 
 def test_delete(db: Database):
-    acc = Account()
-    acc.delete(1)
+    Account(1).delete()
 
-    with pytest.raises(NoResultFound):
-        (db.session.query(AccountsModel).filter(AccountsModel.account_id == 1).one())
+    assert (
+        db.session.query(AccountsModel)
+        .filter(AccountsModel.account_id == 1)
+        .one_or_none()
+    ) is None
