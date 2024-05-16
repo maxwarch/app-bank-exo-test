@@ -40,7 +40,10 @@ class Account(Bank):
         except NoResultFound:
             self.account = None
 
-    def create(self, balance: float) -> AccountsModel:
+    def create(self, balance: float = None) -> AccountsModel:
+        if balance is None:
+            return
+
         query = insert(AccountsModel).values(balance=balance).returning(AccountsModel)
 
         with self.db.engine.connect() as conn:

@@ -6,7 +6,6 @@ from src.bank import Account
 
 from src.classes.errors import TransactionError
 
-# import src.classes.errors as Errors
 from src.database import Database
 from src.models import TypeTransaction
 from src.main import App
@@ -40,13 +39,13 @@ def test_deposit_negative(db: Database, accounts: List[Account], count_transacti
     assert nb_trans == count_transactions()
 
 
-# def test_deposit_zero(db: Database, accounts: List[Account], count_transactions):
-#     app = App()
-#     nb_trans = count_transactions()
+def test_deposit_zero(db: Database, accounts: List[Account], count_transactions):
+    app = App()
+    nb_trans = count_transactions()
 
-#     with pytest.raises(TransactionError, match="AmountZero"):
-#         app.action(accounts[0], TypeTransaction.deposit, amount=0)
+    with pytest.raises(TransactionError, match="AmountZero"):
+        app.action(accounts[0], TypeTransaction.deposit, amount=0)
 
-#     accounts[0]._refresh()
-#     assert accounts[0].account.balance == 100
-#     assert nb_trans == count_transactions()
+    accounts[0]._refresh()
+    assert accounts[0].account.balance == 100
+    assert nb_trans == count_transactions()

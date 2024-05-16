@@ -1,14 +1,15 @@
 from src.bank import Account, Transaction, TypeTransaction
 from src.classes.errors import TransactionError
+from src.models import AccountsModel
 
 
 class App:
     def __init__(self) -> None:
         pass
 
-    def create_account(self, **kwargs):
+    def create_account(self, balance: float):
         acc = Account()
-        acc.create(**kwargs)
+        acc.create(balance)
         return acc
 
     def action(self, account: Account, type: TypeTransaction, **kwargs):
@@ -22,6 +23,10 @@ class App:
             return self.__transfer(account, **kwargs)
 
         return account
+
+    def get_balance(self, account: Account) -> AccountsModel:
+        account._refresh()
+        return account.account
 
     def __transfer(self, account: Account, target: Account, amount: float):
         withdraw, account = self.__withdraw(account, amount)
@@ -58,9 +63,3 @@ class App:
         account.update(-amount)
 
         return (transaction, account)
-
-
-if __name__ == "__main__":
-    app = App()
-
-    app.create_account(amount=12)
