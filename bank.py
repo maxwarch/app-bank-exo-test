@@ -1,9 +1,13 @@
-from sqlalchemy import bindparam, insert, update
+from sqlalchemy import Row, bindparam, insert, update
 from sqlalchemy.orm.exc import NoResultFound
 from classes.errors import TransactionError
 from database import Database
 
 from models import AccountsModel, TransactionsModel, TypeTransaction
+
+
+class ObjData:
+    pass
 
 
 class Bank:
@@ -21,12 +25,12 @@ class Bank:
 class Account(Bank):
     def __init__(self, account_id: int = None) -> None:
         super().__init__()
-        self.account = None
+        self.account = ObjData()
         if account_id is not None:
-            self.account = {"account_id": account_id}
+            self.account.account_id = account_id
             self._refresh()
 
-    def _refresh(self) -> AccountsModel:
+    def _refresh(self):
         try:
             self.account = self.session.get_one(
                 AccountsModel,
@@ -66,9 +70,9 @@ class Account(Bank):
 class Transaction(Bank):
     def __init__(self, transaction_id: int = None) -> None:
         super().__init__()
-        self.transaction = None
+        self.transaction = ObjData()
         if transaction_id is not None:
-            self.transaction = {"transaction_id": transaction_id}
+            self.transaction.transaction_id = transaction_id
             self._refresh()
 
     def _refresh(self):
