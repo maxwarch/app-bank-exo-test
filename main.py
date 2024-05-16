@@ -6,14 +6,27 @@ class App:
     def __init__(self) -> None:
         pass
 
-    def deposit(self, account: Account, amount: float, type: TypeTransaction):
-        if account.balance < 0 and amount > 0:
-            raise TransactionError("InsuffisantAmout")
+    def create_account(self, **kwargs):
+        acc = Account()
+        acc.create(**kwargs)
+        return acc
 
-        return Transaction().create(
-            account_id=account.account_id, amount=amount, type=type
+    def action(self, account: Account, type: TypeTransaction, **kwargs):
+        if type == TypeTransaction.deposit:
+            return self.__deposit(account, **kwargs)
+
+        return account
+
+    def __deposit(self, account: Account, amount: float):
+        account_data = account.account
+
+        transaction = Transaction()
+        transaction.create(
+            account_id=account_data.account_id,
+            amount=amount,
+            type=TypeTransaction.deposit,
         )
 
+        account.update(amount)
 
-# if __name__ == "__main__":
-#     pass
+        return (transaction, account)

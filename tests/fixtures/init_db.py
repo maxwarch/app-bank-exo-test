@@ -1,8 +1,10 @@
+from typing import List
 import pytest
 from sqlalchemy import bindparam
 
 from bank import Account
 from database import Database
+from main import App
 from models import AccountsModel, Base
 
 
@@ -21,13 +23,12 @@ def db():
 
 
 @pytest.fixture(scope="module")
-def seed_user(db) -> Account:
-    acc = Account()
-    acc.create(100)
+def accounts(db) -> List[Account]:
+    accounts_balance = [100, 50]
+    accounts = []
+    app = App()
+    for balance in accounts_balance:
+        acc = app.create_account(balance=balance)
+        accounts.append(acc)
 
-    return acc.account
-    # return (
-    #     db.session.query(AccountsModel)
-    #     .filter(AccountsModel.account_id == bindparam("account_id", 1))
-    #     .one()
-    # )
+    return accounts

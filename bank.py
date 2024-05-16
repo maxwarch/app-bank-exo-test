@@ -23,14 +23,15 @@ class Account(Bank):
         super().__init__()
         self.account = None
         if account_id is not None:
-            self._refresh(account_id)
+            self.account = {"account_id": account_id}
+            self._refresh()
 
-    def _refresh(self, account_id: int) -> AccountsModel:
+    def _refresh(self) -> AccountsModel:
         try:
             self.account = self.session.get_one(
                 AccountsModel,
-                ident=account_id,
-                bind_arguments={"account_id": account_id},
+                ident=self.account.account_id,
+                bind_arguments={"account_id": self.account.account_id},
             )
         except NoResultFound:
             self.account = None
@@ -67,14 +68,15 @@ class Transaction(Bank):
         super().__init__()
         self.transaction = None
         if transaction_id is not None:
-            self._refresh(transaction_id)
+            self.transaction = {"transaction_id": transaction_id}
+            self._refresh()
 
-    def _refresh(self, transaction_id: int):
+    def _refresh(self):
         try:
             self.transaction = self.session.get_one(
                 TransactionsModel,
-                ident=transaction_id,
-                bind_arguments={"transaction_id": transaction_id},
+                ident=self.transaction.transaction_id,
+                bind_arguments={"transaction_id": self.transaction.transaction_id},
             )
         except NoResultFound:
             self.transaction = None
@@ -93,6 +95,9 @@ class Transaction(Bank):
 
         if not TypeTransaction.has_value(type):
             raise TransactionError("NotATransactionType")
+
+        if not (amount != 0):
+            raise TransactionError("AmountZero")
 
         if not (amount > 0):
             raise TransactionError("AmountNegative")
