@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 
-from classes.singleton_class import Singleton
+from src.classes.singleton_class import Singleton
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///data.sqlite"
 

@@ -1,9 +1,9 @@
-from sqlalchemy import Row, bindparam, insert, update
+from sqlalchemy import bindparam, insert, update
 from sqlalchemy.orm.exc import NoResultFound
-from classes.errors import TransactionError
-from database import Database
+from src.classes.errors import TransactionError
+from src.database import Database
 
-from models import AccountsModel, TransactionsModel, TypeTransaction
+from src.models import AccountsModel, TransactionsModel, TypeTransaction
 
 
 class ObjData:
@@ -97,13 +97,15 @@ class Transaction(Bank):
         if not self.check_account(account_id):
             raise TransactionError("NoAccountAttach")
 
-        if not TypeTransaction.has_value(type):
+        type_name = type.name if isinstance(type, TypeTransaction) else None
+
+        if type_name in TypeTransaction or type_name is None:
             raise TransactionError("NotATransactionType")
 
-        if not (amount != 0):
+        if amount == 0:
             raise TransactionError("AmountZero")
 
-        if not (amount > 0):
+        if amount < 0:
             raise TransactionError("AmountNegative")
 
         query = (

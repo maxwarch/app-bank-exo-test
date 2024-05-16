@@ -1,11 +1,10 @@
 from typing import List
 import pytest
-from sqlalchemy import bindparam
 
-from bank import Account
-from database import Database
-from main import App
-from models import AccountsModel, Base
+from src.bank import Account
+from src.database import Database
+from src.main import App
+from src.models import Base
 
 
 @pytest.fixture(scope="module")
@@ -22,7 +21,7 @@ def db():
         Base.metadata.drop_all(db.engine)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def accounts(db) -> List[Account]:
     accounts_balance = [100, 50]
     accounts = []

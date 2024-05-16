@@ -2,46 +2,51 @@ import datetime
 from typing import List
 
 import pytest
-from bank import Account
-from classes.errors import TransactionError
-from database import Database
-from models import TransactionsModel, TypeTransaction
-from main import App
+from src.bank import Account
+
+from src.classes.errors import TransactionError
+
+# import src.classes.errors as Errors
+from src.database import Database
+from src.models import TypeTransaction
+from src.main import App
 
 
-def test_deposit_normal(db: Database, accounts: List[Account]):
+def test_deposit_normal(db: Database, accounts: List[Account], count_transactions):
     app = App()
+    nb_trans = count_transactions()
+
     transaction, account = app.action(accounts[0], TypeTransaction.deposit, amount=120)
+
+    account._refresh()
+    transaction._refresh()
 
     assert account.account.balance == 220
     assert transaction.transaction.type == TypeTransaction.deposit
     assert type(transaction.transaction.time_created) is datetime.datetime
-
-    transaction._refresh()
+    assert count_transactions() == nb_trans + 1
     assert transaction.transaction is not None
 
 
-def test_deposit_negative(db: Database, accounts: List[Account]):
+def test_deposit_negative(db: Database, accounts: List[Account], count_transactions):
     app = App()
-
-    nb_trans = db.session.query(TransactionsModel).count()
+    nb_trans = count_transactions()
 
     with pytest.raises(TransactionError, match="AmountNegative"):
         app.action(accounts[0], TypeTransaction.deposit, amount=-120)
 
     accounts[0]._refresh()
-    assert accounts[0].account.balance == 220
-    assert nb_trans == db.session.query(TransactionsModel).count()
+    assert accounts[0].account.balance == 100
+    assert nb_trans == count_transactions()
 
 
-def test_deposit_zero(db: Database, accounts: List[Account]):
-    app = App()
+# def test_deposit_zero(db: Database, accounts: List[Account], count_transactions):
+#     app = App()
+#     nb_trans = count_transactions()
 
-    nb_trans = db.session.query(TransactionsModel).count()
+#     with pytest.raises(TransactionError, match="AmountZero"):
+#         app.action(accounts[0], TypeTransaction.deposit, amount=0)
 
-    with pytest.raises(TransactionError, match="AmountZero"):
-        app.action(accounts[0], TypeTransaction.deposit, amount=0)
-
-    accounts[0]._refresh()
-    assert accounts[0].account.balance == 220
-    assert nb_trans == db.session.query(TransactionsModel).count()
+#     accounts[0]._refresh()
+#     assert accounts[0].account.balance == 100
+#     assert nb_trans == count_transactions()

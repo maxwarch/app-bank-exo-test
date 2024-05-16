@@ -32,15 +32,6 @@ class TypeTransaction(enum.Enum):
     withdraw = 2
     transfer = 3
 
-    @classmethod
-    def has_value(cls, value):
-        if value in cls._member_names_:
-            return True
-        elif value in cls.__members__.values():
-            return True
-        else:
-            return False
-
 
 class TransactionsModel(Base):
     __tablename__ = "transactions"

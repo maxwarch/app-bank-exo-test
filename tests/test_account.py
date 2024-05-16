@@ -1,8 +1,6 @@
-import pytest
-
-from bank import Account
-from database import Database
-from models import AccountsModel
+from src.bank import Account
+from src.database import Database
+from src.models import AccountsModel
 
 INIT_BALANCE = 5899
 

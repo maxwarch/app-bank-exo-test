@@ -1,8 +1,8 @@
 import pytest
 
-from classes.errors import TransactionError
-from database import Database
-from models import TypeTransaction
+from src.classes.errors import TransactionError
+from src.database import Database
+from src.models import TypeTransaction
 
 
 def test_create_no_problem(db: Database, accounts, transaction_factory):
