@@ -1,5 +1,5 @@
 from src.bank import Account, Transaction, TypeTransaction
-from src.classes.errors import TransactionError
+from src.classes.errors import AccountError, TransactionError
 from src.models import AccountsModel
 
 
@@ -22,13 +22,28 @@ class App:
         if type == TypeTransaction.transfer:
             return self.__transfer(account, **kwargs)
 
-        return account
+        raise TransactionError("NotATransactionType")
 
     def get_balance(self, account: Account) -> AccountsModel:
         account._refresh()
         return account.account
 
-    def __transfer(self, account: Account, target: Account, amount: float):
+    def __transfer(
+        self, account: Account = None, target: Account = None, amount: float = 0
+    ):
+        if target is None or (
+            hasattr(target, "is_exist") and target.is_exist() is False
+        ):
+            raise AccountError("TargetAccountNotExist")
+
+        if account is None or (
+            hasattr(account, "is_exist") and account.is_exist() is False
+        ):
+            raise AccountError("AccountNotExist")
+
+        if account == target:
+            raise TransactionError("AccountAndTargetAreTheSame")
+
         withdraw, account = self.__withdraw(account, amount)
         deposit, target = self.__deposit(target, amount)
         return [(withdraw, account), (deposit, target)]

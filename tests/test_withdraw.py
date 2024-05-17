@@ -14,7 +14,6 @@ def test_withdraw_normal(db: Database, accounts: List[Account], count_transactio
     nb_trans = count_transactions()
 
     transaction, account = app.action(accounts[0], TypeTransaction.withdraw, amount=50)
-
     account._refresh()
     assert account.account.balance == 50
 
@@ -26,42 +25,44 @@ def test_withdraw_normal(db: Database, accounts: List[Account], count_transactio
     assert count_transactions() == nb_trans + 1
 
 
-def test_withdraw_insufficient_funds(
-    db: Database, accounts: List[Account], count_transactions
+@pytest.mark.parametrize(
+    "amount, type, expected",
+    [
+        (
+            150,
+            TypeTransaction.withdraw,
+            pytest.raises(TransactionError, match="InsufficientFunds"),
+        ),
+        (
+            20,
+            "TypeTransaction.withdraw",
+            pytest.raises(TransactionError, match="NotATransactionType"),
+        ),
+        (
+            -5,
+            TypeTransaction.withdraw,
+            pytest.raises(TransactionError, match="AmountNegative"),
+        ),
+        (
+            0,
+            TypeTransaction.withdraw,
+            pytest.raises(TransactionError, match="AmountZero"),
+        ),
+        (
+            "test",
+            TypeTransaction.withdraw,
+            pytest.raises(TypeError),
+        ),
+    ],
+)
+def test_withdraw_exception(
+    db, accounts: List[Account], count_transactions, amount, type, expected
 ):
     app = App()
     nb_trans = count_transactions()
 
-    with pytest.raises(TransactionError, match="InsufficientFunds"):
-        app.action(accounts[0], TypeTransaction.withdraw, amount=120)
-
-    accounts[0]._refresh()
-    assert accounts[0].account.balance == 100
-    assert nb_trans == count_transactions()
-
-
-def test_withdraw_zero_amount(
-    db: Database, accounts: List[Account], count_transactions
-):
-    app = App()
-    nb_trans = count_transactions()
-
-    with pytest.raises(TransactionError, match="AmountZero"):
-        app.action(accounts[0], TypeTransaction.withdraw, amount=0)
-
-    accounts[0]._refresh()
-    assert accounts[0].account.balance == 100
-    assert nb_trans == count_transactions()
-
-
-def test_withdraw_negative_amount(
-    db: Database, accounts: List[Account], count_transactions
-):
-    app = App()
-    nb_trans = count_transactions()
-
-    with pytest.raises(TransactionError, match="AmountNegative"):
-        app.action(accounts[0], TypeTransaction.withdraw, amount=-20)
+    with expected as e:
+        assert (app.action(accounts[0], type, amount=amount)) == e
 
     accounts[0]._refresh()
     assert accounts[0].account.balance == 100

@@ -27,25 +27,36 @@ def test_deposit_normal(db: Database, accounts: List[Account], count_transaction
     assert transaction.transaction is not None
 
 
-def test_deposit_negative(db: Database, accounts: List[Account], count_transactions):
+@pytest.mark.parametrize(
+    "amount, type, expected",
+    [
+        (
+            100,
+            "TypeTransaction.deposit",
+            pytest.raises(TransactionError, match="NotATransactionType"),
+        ),
+        (
+            0,
+            TypeTransaction.deposit,
+            pytest.raises(TransactionError, match="AmountZero"),
+        ),
+        (
+            -10,
+            TypeTransaction.deposit,
+            pytest.raises(TransactionError, match="AmountNegative"),
+        ),
+    ],
+)
+def test_deposit_exception(
+    db, accounts: List[Account], count_transactions, amount, type, expected
+):
     app = App()
     nb_trans = count_transactions()
+    init_balance = accounts[0].account.balance
 
-    with pytest.raises(TransactionError, match="AmountNegative"):
-        app.action(accounts[0], TypeTransaction.deposit, amount=-120)
-
-    accounts[0]._refresh()
-    assert accounts[0].account.balance == 100
-    assert nb_trans == count_transactions()
-
-
-def test_deposit_zero(db: Database, accounts: List[Account], count_transactions):
-    app = App()
-    nb_trans = count_transactions()
-
-    with pytest.raises(TransactionError, match="AmountZero"):
-        app.action(accounts[0], TypeTransaction.deposit, amount=0)
+    with expected as e:
+        assert (app.action(accounts[0], type, amount=amount)) == e
 
     accounts[0]._refresh()
-    assert accounts[0].account.balance == 100
+    assert accounts[0].account.balance == init_balance
     assert nb_trans == count_transactions()

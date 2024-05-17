@@ -1,26 +1,48 @@
+from typing import List
 import pytest
 
+from src.bank import Account
 from src.classes.errors import TransactionError
 from src.database import Database
 from src.models import TypeTransaction
 
 
-def test_create_no_problem(db: Database, accounts, transaction_factory):
+def test_create_no_problem(db: Database, accounts: List[Account], transaction_factory):
     trans = transaction_factory(1, amount=12, type=TypeTransaction.deposit)
     assert trans.transaction_id == 1
 
 
-# un user est créé dans seed avec l'id 1
-def test_create_no_user_attach(db: Database, accounts, transaction_factory):
-    with pytest.raises(TransactionError, match="NoAccountAttach"):
-        transaction_factory(12, amount=12, type=TypeTransaction.deposit)
-
-
-def test_create_with_wrong_type(db: Database, accounts, transaction_factory):
-    with pytest.raises(TransactionError, match="NotATransactionType"):
-        transaction_factory(1, amount=12, type="deposit2")
-
-
-def test_create_with_amount_as_word(db: Database, accounts, transaction_factory):
-    with pytest.raises(TypeError):
-        transaction_factory(1, amount="test", type=TypeTransaction.deposit)
+@pytest.mark.parametrize(
+    "account_id, amount, type, expected",
+    [
+        (
+            100,
+            20,
+            TypeTransaction.deposit,
+            pytest.raises(TransactionError, match="NoAccountAttach"),
+        ),
+        (
+            1,
+            20,
+            "TypeTransaction.deposit",
+            pytest.raises(TransactionError, match="NotATransactionType"),
+        ),
+        (
+            1,
+            -5,
+            TypeTransaction.deposit,
+            pytest.raises(TransactionError, match="AmountNegative"),
+        ),
+        (
+            1,
+            "salut",
+            TypeTransaction.deposit,
+            pytest.raises(TypeError),
+        ),
+    ],
+)
+def test_transaction_exception(
+    db, accounts: List[Account], transaction_factory, account_id, amount, type, expected
+):
+    with expected as e:
+        assert (transaction_factory(account_id, amount=amount, type=type)) == e

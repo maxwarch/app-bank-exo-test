@@ -30,4 +30,8 @@ def accounts(db) -> List[Account]:
         acc = app.create_account(balance=balance)
         accounts.append(acc)
 
+    acc = app.create_account(balance=50)
+    accounts.append(acc)
+    acc.delete()
+
     return accounts

@@ -40,6 +40,10 @@ class Account(Bank):
         except NoResultFound:
             self.account = None
 
+    def is_exist(self) -> bool:
+        self._refresh()
+        return self.account is not None
+
     def create(self, balance: float = None) -> AccountsModel:
         if balance is None:
             return
@@ -50,6 +54,7 @@ class Account(Bank):
             acc = conn.execute(query)
             self.account = acc.one_or_none()
             conn.commit()
+            conn.close()
 
     def update(self, balance: float):
         query = (
@@ -62,12 +67,14 @@ class Account(Bank):
             acc = conn.execute(query)
             self.account = acc.one_or_none()
             conn.commit()
+            conn.close()
 
     def delete(self):
         self.session.query(AccountsModel).filter(
             AccountsModel.account_id == self.account.account_id
         ).delete()
         self.commit()
+        self.close()
 
 
 class Transaction(Bank):
@@ -121,3 +128,4 @@ class Transaction(Bank):
             trans = conn.execute(query)
             self.transaction = trans.one_or_none()
             conn.commit()
+            conn.close()
